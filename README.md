@@ -1,6 +1,21 @@
 # Local Chess Analysis Tool (Nexus Engine)
 
+> **GitHub Repository Description (Copy-paste this to your GitHub About section):**
+> *A sleek, zero-latency local chess analysis tool bridging your browser (Chess.com/Lichess) to a local Stockfish engine via WebSockets. Features a dark-themed Next.js dashboard, live win-probability/evaluation bar, move history ledger, and an in-browser Shadow DOM-compatible chessboard overlay.*
+
+---
+
 A highly optimized, fully local chess analysis tool that bridges a web browser with a local Stockfish engine. It consists of a Python FastAPI backend, a sleek Next.js dashboard, and a passive Tampermonkey userscript for automated board monitoring.
+
+## Key Features
+
+- 🕵️ **Passive Board Monitoring**: Injected userscript captures board states entirely in the background. It draws no arrows and alters no HTML directly, keeping your real game screen clean and undetected.
+- 🎨 **Shadow DOM & Style Encapsulation Support**: Seamlessly observes Chess.com's modern Web Components (`wc-chess-board`) and injects highlights directly into its Shadow Root.
+- 📊 **Real-time Win Probability & Evaluation**: Visualizes who is winning with a sleek, animated progress bar calculated dynamically from Stockfish evaluation values.
+- 📋 **Move History Ledger**: Registers and formats algebraic notation (SAN) moves in real-time on your dashboard.
+- 🔄 **Manual Turn Toggle**: Syncs desynchronized turns or allows you to start games from the middle by simply pressing "Toggle Turn".
+- ⚙️ **On-the-Fly Configuration**: Adjust depth limits, ELO ratings, skill levels, and DOM extraction queries without restarting backend servers.
+- 🎛️ **Dashboard Overlay Toggle**: Instantly enable or disable the chessboard highlights overlay directly from the dashboard controls.
 
 ## Setup Instructions
 

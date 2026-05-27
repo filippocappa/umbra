@@ -14,8 +14,20 @@
     'use strict';
 
     // Inject Custom Overlay CSS for highlighting best moves
-    function injectStyles() {
-        const style = document.createElement('style');
+    function injectStyles(targetRoot) {
+        const root = targetRoot || document;
+        const doc = root.ownerDocument || document;
+        
+        // Find if style is already injected in this root
+        if (root.getElementById && root.getElementById('nexus-overlay-styles')) {
+            return;
+        }
+        if (root.querySelector && root.querySelector('#nexus-overlay-styles')) {
+            return;
+        }
+
+        const style = doc.createElement('style');
+        style.id = 'nexus-overlay-styles';
         style.innerHTML = `
             .nexus-highlight {
                 background-color: rgba(99, 102, 241, 0.15) !important;
@@ -26,7 +38,7 @@
                 position: absolute !important;
                 width: 12.5% !important;
                 height: 12.5% !important;
-                z-index: 3 !important;
+                z-index: 3999 !important; /* Ensure it stays on top of other board elements */
             }
             .nexus-highlight-to {
                 border-style: solid !important;
@@ -35,13 +47,18 @@
                 box-shadow: 0 0 10px rgba(16, 185, 129, 0.4) !important;
             }
         `;
-        if (document.head) {
-            document.head.appendChild(style);
+        
+        if (root === document) {
+            if (document.head) {
+                document.head.appendChild(style);
+            } else {
+                document.documentElement.appendChild(style);
+            }
         } else {
-            document.documentElement.appendChild(style);
+            root.appendChild(style);
         }
     }
-    injectStyles();
+    injectStyles(document);
 
     // --- Remote Console Logic ---
     let ws = null;
@@ -185,7 +202,15 @@
             }, 100);
         });
 
+        // Observe the host boardElement (for class changes like 'flipped')
         observer.observe(boardElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        // Observe the shadow root or light DOM (for piece moves)
+        const targetDOM = boardElement.shadowRoot || boardElement;
+        observer.observe(targetDOM, {
             childList: true,
             subtree: true,
             attributes: true,
@@ -258,12 +283,16 @@
         const boardElement = document.querySelector(domConfig.boardSelector);
         if (!boardElement) return;
 
+        const targetDOM = boardElement.shadowRoot || boardElement;
         const fromSq = algebraicToSquare(bestMove.substring(0, 2));
         const toSq = algebraicToSquare(bestMove.substring(2, 4));
 
         if (!fromSq || !toSq) return;
 
         const isFlipped = boardElement.classList.contains("flipped");
+
+        // Ensure styles are injected in this ShadowRoot / document
+        injectStyles(targetDOM);
 
         // Create overlay divs
         highlightFromEl = document.createElement("div");
@@ -274,8 +303,8 @@
         highlightToEl.className = "highlight nexus-highlight nexus-highlight-to";
         positionSquare(highlightToEl, toSq, isFlipped);
 
-        boardElement.appendChild(highlightFromEl);
-        boardElement.appendChild(highlightToEl);
+        targetDOM.appendChild(highlightFromEl);
+        targetDOM.appendChild(highlightToEl);
     }
 
     function processBoard() {
@@ -293,7 +322,8 @@
         // Make sure we inform dashboard we are connected
         setBoardStatus("connected");
 
-        const pieces = boardElement.querySelectorAll(domConfig.pieceSelector);
+        const targetDOM = boardElement.shadowRoot || boardElement;
+        const pieces = targetDOM.querySelectorAll(domConfig.pieceSelector);
         if (pieces.length === 0) return;
         
         const board = Array(8).fill(null).map(() => Array(8).fill(null));
