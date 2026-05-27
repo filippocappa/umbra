@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Local Chess Analysis Tool (Nexus Engine)
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  Passively observes the chess board, tracks turn via memory, and pipes data to the local WebSocket
 // @match        *://chess.com/*
 // @match        *://*.chess.com/*
@@ -12,6 +12,34 @@
 
 (function() {
     'use strict';
+
+    // Inject Custom Overlay CSS for highlighting best moves
+    function injectStyles() {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .nexus-highlight {
+                background-color: rgba(99, 102, 241, 0.15) !important;
+                border: 2px dashed rgba(99, 102, 241, 0.85) !important;
+                border-radius: 4px !important;
+                box-shadow: 0 0 10px rgba(99, 102, 241, 0.4) !important;
+                pointer-events: none !important;
+                position: absolute !important;
+                z-index: 3 !important;
+            }
+            .nexus-highlight-to {
+                border-style: solid !important;
+                background-color: rgba(16, 185, 129, 0.15) !important;
+                border-color: rgba(16, 185, 129, 0.85) !important;
+                box-shadow: 0 0 10px rgba(16, 185, 129, 0.4) !important;
+            }
+        `;
+        if (document.head) {
+            document.head.appendChild(style);
+        } else {
+            document.documentElement.appendChild(style);
+        }
+    }
+    injectStyles();
 
     // --- Remote Console Logic ---
     let ws = null;
@@ -41,7 +69,7 @@
         remoteLog('error', ...args);
     };
 
-    console.log("[ChessTool] Script injected. V3 initialized.");
+    console.log("[ChessTool] Script injected. V4 initialized with Board Overlay support.");
 
     // --- State ---
     let domConfig = {
@@ -57,6 +85,11 @@
     let userColor = 'w';
     let activeTurn = 'w'; // Always assume White starts
     let previousBoard = null;
+    let currentObservedBoard = null;
+
+    // Highlight overlay element tracking
+    let highlightFromEl = null;
+    let highlightToEl = null;
 
     // --- Core Logic ---
     function setBoardStatus(status) {
@@ -97,6 +130,9 @@
                     console.log("[ChessTool] Toggle turn requested by dashboard.");
                     activeTurn = activeTurn === 'w' ? 'b' : 'w';
                     processBoard();
+                } else if (data.type === "best_move") {
+                    console.log(`[ChessTool] Received best move from engine: ${data.move}`);
+                    applyHighlights(data.move);
                 }
             } catch (err) {
                 console.error("[ChessTool] JSON Parse error from WS message", err);
@@ -129,6 +165,7 @@
 
         console.log("[ChessTool] Board found! Setting up MutationObserver.");
         setBoardStatus("connected");
+        currentObservedBoard = boardElement;
 
         observer = new MutationObserver((mutations) => {
             if (!observerActive) return;
@@ -148,7 +185,7 @@
 
     // Compare boards to infer whose turn it is
     function detectTurn(oldBoard, newBoard) {
-        if (!oldBoard) return 'w'; // Assume white if first time
+        if (!oldBoard) return activeTurn; // Fallback to current memory instead of hardcoding White
 
         // Find which piece color changed position
         for (let r = 0; r < 8; r++) {
@@ -167,6 +204,47 @@
         return activeTurn; // Fallback
     }
 
+    function algebraicToSquare(alg) {
+        if (!alg || alg.length < 2) return null;
+        const fileChar = alg.charAt(0);
+        const rankChar = alg.charAt(1);
+        const file = fileChar.charCodeAt(0) - 97 + 1; // 'a' code is 97
+        const rank = parseInt(rankChar, 10);
+        return `${file}${rank}`;
+    }
+
+    function applyHighlights(bestMove) {
+        // Remove existing highlights
+        if (highlightFromEl) {
+            highlightFromEl.remove();
+            highlightFromEl = null;
+        }
+        if (highlightToEl) {
+            highlightToEl.remove();
+            highlightToEl = null;
+        }
+
+        if (!bestMove || bestMove.length < 4) return;
+
+        const boardElement = document.querySelector(domConfig.boardSelector);
+        if (!boardElement) return;
+
+        const fromSq = algebraicToSquare(bestMove.substring(0, 2));
+        const toSq = algebraicToSquare(bestMove.substring(2, 4));
+
+        if (!fromSq || !toSq) return;
+
+        // Create overlay divs
+        highlightFromEl = document.createElement("div");
+        highlightFromEl.className = `highlight nexus-highlight nexus-highlight-from square-${fromSq}`;
+
+        highlightToEl = document.createElement("div");
+        highlightToEl.className = `highlight nexus-highlight nexus-highlight-to square-${toSq}`;
+
+        boardElement.appendChild(highlightFromEl);
+        boardElement.appendChild(highlightToEl);
+    }
+
     function processBoard() {
         if (!observerActive || !ws || ws.readyState !== WebSocket.OPEN) return;
 
@@ -176,6 +254,9 @@
             return;
         }
         
+        // Clear previous overlays immediately as the board is updated
+        applyHighlights(null);
+
         // Make sure we inform dashboard we are connected
         setBoardStatus("connected");
 
@@ -252,6 +333,17 @@
             }));
         }
     }
+
+    // Periodic check to detect board recreation or rematch actions
+    function checkBoardExistence() {
+        const boardElement = document.querySelector(domConfig.boardSelector);
+        if (boardElement && boardElement !== currentObservedBoard) {
+            console.log("[ChessTool] Board node changed/recreated. Re-initializing observer.");
+            setupObserver();
+            processBoard();
+        }
+    }
+    setInterval(checkBoardExistence, 1000);
 
     connect();
 
