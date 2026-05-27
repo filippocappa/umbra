@@ -194,7 +194,7 @@ export default function Dashboard() {
                   <label className="block text-xs font-medium text-neutral-500 mb-1.5 uppercase tracking-wider">Board Selector</label>
                   <input
                     type="text"
-                    value={domConfig.boardSelector}
+                    value={domConfig.boardSelector || ""}
                     onChange={(e) => handleDomConfigChange(e, "boardSelector")}
                     className="w-full bg-neutral-900/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white/90 focus:outline-none focus:border-indigo-500/50 transition-colors"
                   />
@@ -203,7 +203,7 @@ export default function Dashboard() {
                   <label className="block text-xs font-medium text-neutral-500 mb-1.5 uppercase tracking-wider">Piece Selector</label>
                   <input
                     type="text"
-                    value={domConfig.pieceSelector}
+                    value={domConfig.pieceSelector || ""}
                     onChange={(e) => handleDomConfigChange(e, "pieceSelector")}
                     className="w-full bg-neutral-900/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white/90 focus:outline-none focus:border-indigo-500/50 transition-colors"
                   />
@@ -212,7 +212,7 @@ export default function Dashboard() {
                   <label className="block text-xs font-medium text-neutral-500 mb-1.5 uppercase tracking-wider">Color & Piece Regex</label>
                   <input
                     type="text"
-                    value={domConfig.colorPieceRegex}
+                    value={domConfig.colorPieceRegex || ""}
                     onChange={(e) => handleDomConfigChange(e, "colorPieceRegex")}
                     className="w-full bg-neutral-900/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-mono text-indigo-300 focus:outline-none focus:border-indigo-500/50 transition-colors"
                   />
@@ -221,7 +221,7 @@ export default function Dashboard() {
                   <label className="block text-xs font-medium text-neutral-500 mb-1.5 uppercase tracking-wider">Square Regex</label>
                   <input
                     type="text"
-                    value={domConfig.squareRegex}
+                    value={domConfig.squareRegex || ""}
                     onChange={(e) => handleDomConfigChange(e, "squareRegex")}
                     className="w-full bg-neutral-900/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-mono text-indigo-300 focus:outline-none focus:border-indigo-500/50 transition-colors mb-4"
                   />

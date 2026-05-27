@@ -96,7 +96,9 @@ class ConnectionManager:
         self.observer_active = True
         self.dom_config = {
             "boardSelector": "chess-board",
-            "pieceSelector": ".piece"
+            "pieceSelector": ".piece",
+            "colorPieceRegex": "\\b([wb])([pnbrqk])\\b",
+            "squareRegex": "square-(\\d)(\\d)"
         }
         self.engine = EngineManager(STOCKFISH_PATH)
         self.engine.start()
