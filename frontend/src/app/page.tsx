@@ -354,7 +354,7 @@ export default function Dashboard() {
                   onChange={handleSliderChange(setMovetime, "movetime")}
                   className="w-full h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
                 />
-                <p className="text-xs text-neutral-600 mt-1">If > 0, overrides calculation depth.</p>
+                <p className="text-xs text-neutral-600 mt-1">If &gt; 0, overrides calculation depth.</p>
               </div>
 
               {/* ELO Slider */}
