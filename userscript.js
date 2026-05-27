@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Local Chess Analysis Tool (Nexus Engine)
 // @namespace    http://tampermonkey.net/
-// @version      0.6.0
+// @version      0.6.1
 // @description  Passively observes the chess board, tracks turn via memory, and pipes data to the local WebSocket
 // @match        *://chess.com/*
 // @match        *://*.chess.com/*
@@ -196,6 +196,31 @@
 
         observer = new MutationObserver((mutations) => {
             if (!observerActive) return;
+            
+            // Filter out mutations caused by our own highlights to prevent feedback loop
+            let realMutation = false;
+            for (const mutation of mutations) {
+                if (mutation.target && mutation.target.classList && mutation.target.classList.contains('nexus-highlight')) {
+                    continue;
+                }
+                
+                if (mutation.type === 'childList') {
+                    const hasRealNode = [...mutation.addedNodes, ...mutation.removedNodes].some(node => {
+                        if (node.nodeType !== 1) return false; // Ignore text nodes
+                        return !node.classList.contains('nexus-highlight');
+                    });
+                    if (hasRealNode) {
+                        realMutation = true;
+                        break;
+                    }
+                } else if (mutation.type === 'attributes') {
+                    realMutation = true;
+                    break;
+                }
+            }
+
+            if (!realMutation) return;
+
             clearTimeout(window.fenTimeout);
             window.fenTimeout = setTimeout(() => {
                 processBoard();
@@ -289,22 +314,35 @@
         return `${file}${rank}`;
     }
 
-    function positionSquare(el, squareStr, isFlipped) {
+    function positionSquare(el, squareStr, isFlipped, isChessCom) {
         if (!el || !squareStr || squareStr.length < 2) return;
-        const file = parseInt(squareStr.charAt(0), 10);
-        const rank = parseInt(squareStr.charAt(1), 10);
         
-        let leftPercent, topPercent;
-        if (isFlipped) {
-            leftPercent = (8 - file) * 12.5;
-            topPercent = (rank - 1) * 12.5;
+        if (isChessCom) {
+            // Remove manual inline styles
+            el.style.left = '';
+            el.style.top = '';
+            
+            // Add Chess.com native square coordinate class (e.g. square-52)
+            const file = squareStr.charAt(0);
+            const rank = squareStr.charAt(1);
+            el.classList.add(`square-${file}${rank}`);
         } else {
-            leftPercent = (file - 1) * 12.5;
-            topPercent = (8 - rank) * 12.5;
+            // Manual percentage positioning (for Lichess)
+            const file = parseInt(squareStr.charAt(0), 10);
+            const rank = parseInt(squareStr.charAt(1), 10);
+            
+            let leftPercent, topPercent;
+            if (isFlipped) {
+                leftPercent = (8 - file) * 12.5;
+                topPercent = (rank - 1) * 12.5;
+            } else {
+                leftPercent = (file - 1) * 12.5;
+                topPercent = (8 - rank) * 12.5;
+            }
+            
+            el.style.left = `${leftPercent}%`;
+            el.style.top = `${topPercent}%`;
         }
-        
-        el.style.left = `${leftPercent}%`;
-        el.style.top = `${topPercent}%`;
     }
 
     function applyHighlights(bestMove) {
@@ -333,6 +371,7 @@
         if (!fromSq || !toSq) return;
 
         const isFlipped = boardElement.classList.contains("flipped");
+        const isChessCom = window.location.hostname.includes("chess.com");
 
         // Ensure styles are injected in targetDOM (the shadowRoot or host)
         injectStyles(targetDOM);
@@ -340,11 +379,11 @@
         // Create overlay divs
         highlightFromEl = document.createElement("div");
         highlightFromEl.className = "highlight nexus-highlight nexus-highlight-from";
-        positionSquare(highlightFromEl, fromSq, isFlipped);
+        positionSquare(highlightFromEl, fromSq, isFlipped, isChessCom);
 
         highlightToEl = document.createElement("div");
         highlightToEl.className = "highlight nexus-highlight nexus-highlight-to";
-        positionSquare(highlightToEl, toSq, isFlipped);
+        positionSquare(highlightToEl, toSq, isFlipped, isChessCom);
 
         container.appendChild(highlightFromEl);
         container.appendChild(highlightToEl);
