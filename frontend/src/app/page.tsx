@@ -295,7 +295,7 @@ export default function Dashboard() {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-                Nexus Engine
+                Umbra
               </h1>
               <p className="text-sm text-neutral-500 flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-indigo-500 animate-pulse' : 'bg-rose-500'}`} />

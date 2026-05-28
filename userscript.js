@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Local Chess Analysis Tool (Nexus Engine)
+// @name         Umbra — Local Chess Analysis
 // @namespace    http://tampermonkey.net/
 // @version      0.6.2
 // @description  Passively observes the chess board, tracks turn via memory, and pipes data to the local WebSocket

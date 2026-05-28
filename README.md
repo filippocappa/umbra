@@ -1,11 +1,13 @@
-# Local Chess Analysis Tool (Nexus Engine)
+# Umbra — Local Chess Analysis Tool
 
 > **GitHub Repository Description (Copy-paste this to your GitHub About section):**
-> *A sleek, zero-latency local chess analysis tool bridging your browser (Chess.com/Lichess) to a local Stockfish engine via WebSockets. Features a dark-themed Next.js dashboard, live win-probability/evaluation bar, move history ledger, and an in-browser Shadow DOM-compatible chessboard overlay.*
+> *Umbra is a sleek, zero-latency local chess analysis tool bridging your browser (Chess.com/Lichess) to a local Stockfish engine via WebSockets. Features a dark-themed Next.js dashboard, live win-probability/evaluation bar, move history ledger, and an in-browser Shadow DOM-compatible chessboard overlay.*
 
 ---
 
-A highly optimized, fully local chess analysis tool that bridges a web browser with a local Stockfish engine. It consists of a Python FastAPI backend, a sleek Next.js dashboard, and a passive Tampermonkey userscript for automated board monitoring.
+**Umbra** is a highly optimized, fully local chess analysis tool that bridges your web browser with a local Stockfish engine. It consists of a Python FastAPI backend, a sleek Next.js dashboard, and a passive Tampermonkey userscript for automated board monitoring.
+
+*Note: We are currently planning to bundle the entire project into a standalone desktop application (using Tauri) to eliminate the need for Tampermonkey and separate python backend installation.*
 
 ## Key Features
 

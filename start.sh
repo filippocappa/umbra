@@ -3,7 +3,7 @@
 # Navigate to the script's directory so it can be run from anywhere
 cd "$(dirname "$0")"
 
-echo "✨ Starting Nexus Engine (Chess Analysis Tool) ✨"
+echo "✨ Starting Umbra (Chess Analysis Tool) ✨"
 
 # ==========================================
 # 1. Setup Backend
@@ -44,7 +44,7 @@ echo "🚀 Starting servers..."
 # Function to elegantly kill background processes when Ctrl+C is pressed
 cleanup() {
     echo ""
-    echo "🛑 Shutting down Nexus Engine..."
+    echo "🛑 Shutting down Umbra..."
     kill $BACKEND_PID $FRONTEND_PID 2>/dev/null
     exit 0
 }
@@ -67,7 +67,7 @@ cd ..
 
 echo ""
 echo "====================================================="
-echo "🟢 Nexus Engine is running!"
+echo "🟢 Umbra is running!"
 echo "🌐 Dashboard: http://localhost:3000"
 echo "🔌 Backend WS: ws://localhost:8000/ws"
 echo "====================================================="

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nexus Engine - Chess Analysis",
+  title: "Umbra - Chess Analysis",
   description: "Real-time local chess analysis dashboard",
 };
 
